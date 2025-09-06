@@ -106,6 +106,18 @@ void SimpleEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
 
     leftChain.prepare(spec);
     rightChain.prepare(spec);
+
+    auto chainSettings = getChainSettings(apvts);
+
+    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+        sampleRate,
+        chainSettings.peakFreq,
+        chainSettings.peakQuality,
+        juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibel));
+
+    *leftChain.get<ChainPositions::Peak>().coefficients  = *peakCoefficients;
+    *rightChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+
 }
 
 void SimpleEQAudioProcessor::releaseResources()
@@ -154,6 +166,19 @@ void SimpleEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+
+
+    auto chainSettings = getChainSettings(apvts);
+
+    auto peakCoefficients = juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+        getSampleRate(),
+        chainSettings.peakFreq,
+        chainSettings.peakQuality,
+        juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibel));
+
+    *leftChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+    *rightChain.get<ChainPositions::Peak>().coefficients = *peakCoefficients;
+
 
     // This is the place where you'd normally do the guts of your plugin's
     // audio processing...
@@ -206,14 +231,37 @@ void SimpleEQAudioProcessor::setStateInformation (const void* data, int sizeInBy
     // whose contents will have been created by the getStateInformation() call.
 }
 
+ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts) {
+    ChainSettings settings;
+
+    settings.lowCutFreq        = apvts.getRawParameterValue("LowCut Freq")->load();
+    settings.highCutFreq       = apvts.getRawParameterValue("HighCut Freq")->load();
+    settings.peakFreq          = apvts.getRawParameterValue("Peak Freq")->load();
+    settings.peakGainInDecibel = apvts.getRawParameterValue("Peak Gain")->load();
+    settings.peakQuality       = apvts.getRawParameterValue("Peak Quality")->load();
+    settings.lowCutSlope       = apvts.getRawParameterValue("LowCut Slope")->load();
+    settings.highCutSlope      = apvts.getRawParameterValue("HighCut Slope")->load();
+
+    return settings;
+}
+
 juce::AudioProcessorValueTreeState::ParameterLayout SimpleEQAudioProcessor::createParameterLayout() {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    juce::NormalisableRange<float> lowFreqRange(20.f, 20000.f, 1.f);
+    lowFreqRange.setSkewForCentre(300.f);
+
+    juce::NormalisableRange<float> peakFreqRange(20.f, 20000.f, 1.f);
+    peakFreqRange.setSkewForCentre(1000.f);
+
+    juce::NormalisableRange<float> highFreqRange(20.f, 20000.f, 1.f);
+    highFreqRange.setSkewForCentre(5000.f);
 
     layout.add(
         std::make_unique<juce::AudioParameterFloat>(
             "LowCut Freq",
             "LowCut Freq",
-            juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+            lowFreqRange,
             20.f
         )
     );
@@ -222,16 +270,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout SimpleEQAudioProcessor::crea
         std::make_unique<juce::AudioParameterFloat>(
             "HighCut Freq",
             "HighCut Freq",
-            juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+            highFreqRange,
             20000.f
         )
     );
+
 
     layout.add(
         std::make_unique<juce::AudioParameterFloat>(
             "Peak Freq",
             "Peak Freq",
-            juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+            peakFreqRange,
             750.f
         )
     );
