@@ -83,7 +83,7 @@ private:
 
     juce::TextButton openButton{ "Open File" };
     juce::TextButton stopButton{ "Stop" };
-
+    juce::TextButton playButton{ "Play" };
 
     std::vector<juce::Component*> getComps();
 

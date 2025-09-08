@@ -171,7 +171,16 @@ SimpleEQAudioProcessorEditor::SimpleEQAudioProcessorEditor(SimpleEQAudioProcesso
             audioProcessor.transportSource.stop();
         };
 
-    setSize (600, 400);
+    addAndMakeVisible(playButton);
+
+    playButton.onClick = [this]()
+        {
+            if (audioProcessor.readerSource != nullptr)
+                audioProcessor.transportSource.start();
+        };
+    
+
+    setSize (800, 600);
 }
 
 SimpleEQAudioProcessorEditor::~SimpleEQAudioProcessorEditor()
@@ -213,7 +222,8 @@ void SimpleEQAudioProcessorEditor::resized()
     peakQualitySlider.setBounds(bounds);
 
     openButton.setBounds(10, 10, 100, 30);
-    stopButton.setBounds(120, 10, 100, 30);
+    playButton.setBounds(120, 10, 100, 30);
+    stopButton.setBounds(230, 10, 100, 30);
 }
 
 
@@ -228,6 +238,7 @@ std::vector<juce::Component*> SimpleEQAudioProcessorEditor::getComps() {
         &highCutSlopeSlider,
         &responseCurveComponent,
         &openButton,
-        &stopButton
+        &stopButton,
+        &playButton
     };
 }
