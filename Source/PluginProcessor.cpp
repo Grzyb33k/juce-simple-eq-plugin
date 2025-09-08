@@ -111,34 +111,6 @@ void SimpleEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
 
     transportSource.prepareToPlay(samplesPerBlock, sampleRate);
 
-    /*auto chainSettings = getChainSettings(apvts);
-
-    updatePeakFilter(chainSettings);
-
-    auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(
-        chainSettings.lowCutFreq,
-        sampleRate,
-        2 * (chainSettings.lowCutSlope + 1)
-    );
-
-    auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
-    updateCutFilter(leftLowCut, lowCutCoefficients, chainSettings.lowCutSlope);
-
-    auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
-    updateCutFilter(rightLowCut, lowCutCoefficients, chainSettings.lowCutSlope);
-
-    auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(
-        chainSettings.highCutFreq,
-        sampleRate,
-        2 * (chainSettings.highCutSlope + 1)
-    );
-
-    auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
-    updateCutFilter(leftHighCut, highCutCoefficients, chainSettings.highCutSlope);
-
-    auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
-    updateCutFilter(rightHighCut, highCutCoefficients, chainSettings.highCutSlope);*/
-
     updateFilters();
 }
 
@@ -334,6 +306,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout SimpleEQAudioProcessor::crea
     juce::NormalisableRange<float> highFreqRange(20.f, 20000.f, 1.f);
     highFreqRange.setSkewForCentre(5000.f);
 
+    juce::NormalisableRange<float> peakQualityRange(0.1f, 10.f, 0.05f);
+    peakQualityRange.setSkewForCentre(1.f);
+
     layout.add(
         std::make_unique<juce::AudioParameterFloat>(
             "LowCut Freq",
@@ -375,7 +350,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout SimpleEQAudioProcessor::crea
         std::make_unique<juce::AudioParameterFloat>(
             "Peak Quality",
             "Peak Quality",
-            juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f),
+            peakQualityRange,
             1.f
         )
     );
