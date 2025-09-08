@@ -200,14 +200,20 @@ void SimpleEQAudioProcessorEditor::paint (juce::Graphics& g)
 
 void SimpleEQAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
-
     auto bounds = getLocalBounds();
-    auto responseArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
 
+    // Pasek przycisków u góry (Open, Play, Stop)
+    auto buttonBarHeight = 40;
+    auto buttonBar = bounds.removeFromTop(buttonBarHeight);
+    openButton.setBounds(buttonBar.removeFromLeft(100).reduced(5));
+    playButton.setBounds(buttonBar.removeFromLeft(100).reduced(5));
+    stopButton.setBounds(buttonBar.removeFromLeft(100).reduced(5));
+
+    // Pole ResponseCurveComponent poni¿ej przycisków
+    auto responseArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
     responseCurveComponent.setBounds(responseArea);
-    
+
+    // Slidery poni¿ej pola wykresu
     auto lowCutArea = bounds.removeFromLeft(bounds.getWidth() * 0.33);
     auto highCutArea = bounds.removeFromRight(bounds.getWidth() * 0.5);
 
@@ -220,10 +226,6 @@ void SimpleEQAudioProcessorEditor::resized()
     peakFreqSlider.setBounds(bounds.removeFromTop(bounds.getHeight() * 0.33));
     peakGainSlider.setBounds(bounds.removeFromTop(bounds.getHeight() * 0.5));
     peakQualitySlider.setBounds(bounds);
-
-    openButton.setBounds(10, 10, 100, 30);
-    playButton.setBounds(120, 10, 100, 30);
-    stopButton.setBounds(230, 10, 100, 30);
 }
 
 
