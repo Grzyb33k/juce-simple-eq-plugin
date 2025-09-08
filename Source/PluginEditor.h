@@ -82,6 +82,8 @@ private:
         highCutSlopeSLiderAttachment;
 
     juce::TextButton openButton{ "Open File" };
+    juce::TextButton stopButton{ "Stop" };
+
 
     std::vector<juce::Component*> getComps();
 
