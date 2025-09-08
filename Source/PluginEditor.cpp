@@ -178,9 +178,39 @@ SimpleEQAudioProcessorEditor::SimpleEQAudioProcessorEditor(SimpleEQAudioProcesso
             if (audioProcessor.readerSource != nullptr)
                 audioProcessor.transportSource.start();
         };
-    
 
-    setSize (800, 600);
+    lowCutFreqSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 100, 20);
+    lowCutFreqSlider.setTextValueSuffix(" Hz (LowCut)");
+    addAndMakeVisible(lowCutFreqSlider);
+
+    highCutFreqSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 100, 20);
+    highCutFreqSlider.setTextValueSuffix(" Hz (HighCut)");
+    addAndMakeVisible(highCutFreqSlider);
+
+    // Peak Frequency
+    peakFreqSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 100, 20);
+    peakFreqSlider.setTextValueSuffix(" Hz (Peak)");
+    addAndMakeVisible(peakFreqSlider);
+
+    // Peak Gain
+    peakGainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 100, 20);
+    peakGainSlider.setTextValueSuffix(" dB (Gain)");
+    addAndMakeVisible(peakGainSlider);
+
+    // Peak Quality (Q)
+    peakQualitySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 100, 20);
+    peakQualitySlider.setTextValueSuffix(" (Q)");
+    addAndMakeVisible(peakQualitySlider);
+    
+    lowCutSlopeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 100, 20);
+    lowCutSlopeSlider.setTextValueSuffix(" Slope");
+    addAndMakeVisible(lowCutSlopeSlider);
+
+    highCutSlopeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 100, 20);
+    highCutSlopeSlider.setTextValueSuffix(" Slope");
+    addAndMakeVisible(highCutSlopeSlider);
+
+    setSize (1000, 800);
 }
 
 SimpleEQAudioProcessorEditor::~SimpleEQAudioProcessorEditor()
@@ -202,30 +232,34 @@ void SimpleEQAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
 
-    // Pasek przycisków u góry (Open, Play, Stop)
     auto buttonBarHeight = 40;
     auto buttonBar = bounds.removeFromTop(buttonBarHeight);
     openButton.setBounds(buttonBar.removeFromLeft(100).reduced(5));
     playButton.setBounds(buttonBar.removeFromLeft(100).reduced(5));
     stopButton.setBounds(buttonBar.removeFromLeft(100).reduced(5));
 
-    // Pole ResponseCurveComponent poni¿ej przycisków
     auto responseArea = bounds.removeFromTop(bounds.getHeight() * 0.33);
     responseCurveComponent.setBounds(responseArea);
 
-    // Slidery poni¿ej pola wykresu
     auto lowCutArea = bounds.removeFromLeft(bounds.getWidth() * 0.33);
     auto highCutArea = bounds.removeFromRight(bounds.getWidth() * 0.5);
 
     lowCutFreqSlider.setBounds(lowCutArea.removeFromTop(lowCutArea.getHeight() * 0.5));
     lowCutSlopeSlider.setBounds(lowCutArea);
 
+    lowCutFreqLabel.setBounds(lowCutArea.removeFromTop(20));
+
     highCutFreqSlider.setBounds(highCutArea.removeFromTop(highCutArea.getHeight() * 0.5));
     highCutSlopeSlider.setBounds(highCutArea);
+
+    highCutFreqLabel.setBounds(highCutArea.removeFromTop(20));
 
     peakFreqSlider.setBounds(bounds.removeFromTop(bounds.getHeight() * 0.33));
     peakGainSlider.setBounds(bounds.removeFromTop(bounds.getHeight() * 0.5));
     peakQualitySlider.setBounds(bounds);
+
+
+
 }
 
 

@@ -85,6 +85,14 @@ private:
     juce::TextButton stopButton{ "Stop" };
     juce::TextButton playButton{ "Play" };
 
+    juce::Label lowCutFreqLabel;
+    juce::Label highCutFreqLabel;
+    juce::Label peakFreqLabel;
+    juce::Label peakGainLabel;
+    juce::Label peakQualityLabel;
+    juce::Label lowCutSlopeLabel;
+    juce::Label highCutSlopeLabel;
+
     std::vector<juce::Component*> getComps();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SimpleEQAudioProcessorEditor)
