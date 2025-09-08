@@ -133,6 +133,37 @@ SimpleEQAudioProcessorEditor::SimpleEQAudioProcessorEditor(SimpleEQAudioProcesso
         addAndMakeVisible(comp);
     }
 
+    addAndMakeVisible(openButton);
+
+    openButton.onClick = [this]()
+        {
+            auto chooser = std::make_shared<juce::FileChooser>("Select an audio file...",
+                juce::File{},
+                "*.wav;*.mp3;*.aiff");
+
+            chooser->launchAsync(juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles,
+                [this, chooser](const juce::FileChooser& fc)
+                {
+                    auto file = fc.getResult();
+                    if (file.existsAsFile())
+                    {
+                        auto* reader = audioProcessor.formatManager.createReaderFor(file);
+
+                        if (reader != nullptr)
+                        {
+                            auto newSource = std::make_unique<juce::AudioFormatReaderSource>(reader, true);
+
+                            audioProcessor.transportSource.setSource(newSource.get(),
+                                0, nullptr,
+                                reader->sampleRate);
+
+                            audioProcessor.readerSource = std::move(newSource);
+                            audioProcessor.transportSource.start();
+                        }
+                    }
+                });
+        };
+
     setSize (600, 400);
 }
 
@@ -173,6 +204,8 @@ void SimpleEQAudioProcessorEditor::resized()
     peakFreqSlider.setBounds(bounds.removeFromTop(bounds.getHeight() * 0.33));
     peakGainSlider.setBounds(bounds.removeFromTop(bounds.getHeight() * 0.5));
     peakQualitySlider.setBounds(bounds);
+
+    openButton.setBounds(10, 10, 100, 30);
 }
 
 
@@ -185,6 +218,7 @@ std::vector<juce::Component*> SimpleEQAudioProcessorEditor::getComps() {
         &highCutFreqSlider,
         &lowCutSlopeSlider,
         &highCutSlopeSlider,
-        &responseCurveComponent
+        &responseCurveComponent,
+        &openButton
     };
 }

@@ -22,6 +22,7 @@ SimpleEQAudioProcessor::SimpleEQAudioProcessor()
                        )
 #endif
 {
+    formatManager.registerBasicFormats();
 }
 
 SimpleEQAudioProcessor::~SimpleEQAudioProcessor()
@@ -100,12 +101,15 @@ void SimpleEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
 
     spec.maximumBlockSize = samplesPerBlock;
 
-    spec.numChannels = 1;
+    spec.numChannels = getTotalNumInputChannels();
+
 
     spec.sampleRate = sampleRate;
 
     leftChain.prepare(spec);
     rightChain.prepare(spec);
+
+    transportSource.prepareToPlay(samplesPerBlock, sampleRate);
 
     /*auto chainSettings = getChainSettings(apvts);
 
@@ -173,8 +177,8 @@ bool SimpleEQAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts)
 void SimpleEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
+    //auto totalNumInputChannels  = getTotalNumInputChannels();
+    //auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     // In case we have more outputs than inputs, this code clears any output
     // channels that didn't contain input data, (because these aren't
@@ -182,37 +186,15 @@ void SimpleEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     // This is here to avoid people getting screaming feedback
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
 
+    //for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+    //    buffer.clear (i, 0, buffer.getNumSamples());
 
-    //auto chainSettings = getChainSettings(apvts);
+    buffer.clear();
 
-    //updatePeakFilter(chainSettings); // function declared below
+    juce::AudioSourceChannelInfo bufferToFill(&buffer, 0, buffer.getNumSamples());
+    transportSource.getNextAudioBlock(bufferToFill);
 
-    //auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(
-    //    chainSettings.lowCutFreq,
-    //    getSampleRate(),
-    //    2 * (chainSettings.lowCutSlope + 1)
-    //);
-
-    //auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
-    //updateCutFilter(leftLowCut, lowCutCoefficients, chainSettings.lowCutSlope);
-
-    //auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
-    //updateCutFilter(rightLowCut, lowCutCoefficients, chainSettings.lowCutSlope);
-
-    //auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(
-    //    chainSettings.highCutFreq,
-    //    getSampleRate(),
-    //    2 * (chainSettings.highCutSlope + 1)
-    //);
-
-    //auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
-    //updateCutFilter(leftHighCut, highCutCoefficients, chainSettings.highCutSlope);
-
-    //auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
-    //updateCutFilter(rightHighCut, highCutCoefficients, chainSettings.highCutSlope);
 
     updateFilters();
 
