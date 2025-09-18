@@ -309,9 +309,6 @@ void ResponseCurveComponent::resized() {
 
     g.setColour(Colours::dimgrey);
     for (auto x : xs) {
-        //auto normX = mapFromLog10(f, 20.f, 20000.f);
-
-        //g.drawVerticalLine(getWidth() * normX, 0.f, getHeight());
 
         g.drawVerticalLine(x, top, bottom);
     }
@@ -323,7 +320,6 @@ void ResponseCurveComponent::resized() {
     for (auto gDb : gains) {
         auto y = jmap(gDb, -24.f, 24.f, float(bottom), float(top));
 
-        //g.drawHorizontalLine(y, 0.f, getWidth());
         g.setColour(gDb == 0.f ? Colours::darkseagreen : Colours::darkgrey);
         g.drawHorizontalLine(y, left, right);
     }
@@ -354,6 +350,27 @@ void ResponseCurveComponent::resized() {
         r.setSize(textWidth, fontHeight);
         r.setCentre(x, 0);
         r.setY(1);
+
+        g.drawFittedText(str, r, juce::Justification::centred, 1);
+    }
+
+    for (auto gDb : gains) {
+        auto y = jmap(gDb, -24.f, 24.f, float(bottom), float(top));
+
+        String str;
+
+        if (gDb > 0)
+            str << "+";
+        str << gDb;
+
+        auto textWidth = g.getCurrentFont().getStringWidth(str);
+
+        Rectangle<int> r;
+        r.setSize(textWidth, fontHeight);
+        r.setX(getWidth() - textWidth);
+        r.setCentre(r.getCentreX(), y);
+
+        g.setColour(gDb == 0.f ? Colours::darkseagreen : Colours::lightgrey);
 
         g.drawFittedText(str, r, juce::Justification::centred, 1);
     }
