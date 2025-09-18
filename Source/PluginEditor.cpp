@@ -217,8 +217,6 @@ void ResponseCurveComponent::paint(juce::Graphics& g)
 
     g.drawImage(background, getLocalBounds().toFloat());
 
-    //auto responseArea = getLocalBounds();
-    //auto responseArea = getRenderArea();
     auto responseArea = getAnalysisArea();
     auto w = responseArea.getWidth();
 
@@ -373,14 +371,19 @@ void ResponseCurveComponent::resized() {
         g.setColour(gDb == 0.f ? Colours::darkseagreen : Colours::lightgrey);
 
         g.drawFittedText(str, r, juce::Justification::centred, 1);
+
+        str.clear();
+        str << (gDb - 24.f);
+        r.setX(1);
+        textWidth = g.getCurrentFont().getStringWidth(str);
+        r.setSize(textWidth, fontHeight);
+        g.setColour(Colours::lightgrey);
+        g.drawFittedText(str, r, juce::Justification::centred, 1);
     }
 }
 
 juce::Rectangle<int> ResponseCurveComponent::getRenderArea() {
     auto bounds = getLocalBounds();
-
-    //bounds.reduce(/*JUCE_LIVE_CONSTANT(5)*/ 10,
-    //              /*JUCE_LIVE_CONSTANT(5)*/ 8);
     
     bounds.removeFromTop(12);
     bounds.removeFromBottom(2);
