@@ -107,35 +107,10 @@ void SimpleEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
     leftChain.prepare(spec);
     rightChain.prepare(spec);
 
-    /*auto chainSettings = getChainSettings(apvts);
-
-    updatePeakFilter(chainSettings);
-
-    auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(
-        chainSettings.lowCutFreq,
-        sampleRate,
-        2 * (chainSettings.lowCutSlope + 1)
-    );
-
-    auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
-    updateCutFilter(leftLowCut, lowCutCoefficients, chainSettings.lowCutSlope);
-
-    auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
-    updateCutFilter(rightLowCut, lowCutCoefficients, chainSettings.lowCutSlope);
-
-    auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(
-        chainSettings.highCutFreq,
-        sampleRate,
-        2 * (chainSettings.highCutSlope + 1)
-    );
-
-    auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
-    updateCutFilter(leftHighCut, highCutCoefficients, chainSettings.highCutSlope);
-
-    auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
-    updateCutFilter(rightHighCut, highCutCoefficients, chainSettings.highCutSlope);*/
-
     updateFilters();
+
+    leftChannelFifo.prepare(samplesPerBlock);
+    rightChannelFifo.prepare(samplesPerBlock);
 }
 
 void SimpleEQAudioProcessor::releaseResources()
@@ -176,59 +151,10 @@ void SimpleEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-
-    //auto chainSettings = getChainSettings(apvts);
-
-    //updatePeakFilter(chainSettings); // function declared below
-
-    //auto lowCutCoefficients = juce::dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(
-    //    chainSettings.lowCutFreq,
-    //    getSampleRate(),
-    //    2 * (chainSettings.lowCutSlope + 1)
-    //);
-
-    //auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
-    //updateCutFilter(leftLowCut, lowCutCoefficients, chainSettings.lowCutSlope);
-
-    //auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
-    //updateCutFilter(rightLowCut, lowCutCoefficients, chainSettings.lowCutSlope);
-
-    //auto highCutCoefficients = juce::dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(
-    //    chainSettings.highCutFreq,
-    //    getSampleRate(),
-    //    2 * (chainSettings.highCutSlope + 1)
-    //);
-
-    //auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
-    //updateCutFilter(leftHighCut, highCutCoefficients, chainSettings.highCutSlope);
-
-    //auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
-    //updateCutFilter(rightHighCut, highCutCoefficients, chainSettings.highCutSlope);
-
     updateFilters();
-
-
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    //for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    //{
-    //    auto* channelData = buffer.getWritePointer (channel);
-
-    //    // ..do something to the data...
-    //}
 
     juce::dsp::AudioBlock<float> block(buffer);
 
@@ -240,6 +166,9 @@ void SimpleEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
 
     leftChain.process(leftContext);
     rightChain.process(rightContext);
+
+    leftChannelFifo.update(buffer);
+    rightChannelFifo.update(buffer);
 }
 
 //==============================================================================
