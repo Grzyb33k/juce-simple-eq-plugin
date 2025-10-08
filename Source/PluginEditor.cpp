@@ -390,19 +390,21 @@ void ResponseCurveComponent::paint(juce::Graphics& g)
         responseCurve.lineTo(responseArea.getX() + i, map(mags[i]));
     }
 
-    auto leftChannelFFTPath = leftPathProducer.getPath();
+    if (shouldShowFFTAnalysis) {
+        auto leftChannelFFTPath = leftPathProducer.getPath();
 
-    leftChannelFFTPath.applyTransform(AffineTransform().translation(responseArea.getX(), responseArea.getY()-10.f));
+        leftChannelFFTPath.applyTransform(AffineTransform().translation(responseArea.getX(), responseArea.getY() - 10.f));
 
-    g.setColour(Colours::skyblue);
-    g.strokePath(leftChannelFFTPath, PathStrokeType(1.f));
+        g.setColour(Colours::skyblue);
+        g.strokePath(leftChannelFFTPath, PathStrokeType(1.f));
 
-    auto rightChannelFFTPath = rightPathProducer.getPath();
+        auto rightChannelFFTPath = rightPathProducer.getPath();
 
-    rightChannelFFTPath.applyTransform(AffineTransform().translation(responseArea.getX(), responseArea.getY() - 10.f));
+        rightChannelFFTPath.applyTransform(AffineTransform().translation(responseArea.getX(), responseArea.getY() - 10.f));
 
-    g.setColour(Colours::tomato);
-    g.strokePath(rightChannelFFTPath, PathStrokeType(1.f));
+        g.setColour(Colours::tomato);
+        g.strokePath(rightChannelFFTPath, PathStrokeType(1.f));
+    }
 
 
     g.setColour(Colours::orange);
@@ -620,6 +622,14 @@ SimpleEQAudioProcessorEditor::SimpleEQAudioProcessorEditor(SimpleEQAudioProcesso
 
             comp->highCutFreqSlider.setEnabled(!bypassed);
             comp->highCutSlopeSlider.setEnabled(!bypassed);
+        }
+    };
+
+    analyzerEnabledButton.onClick = [safePtr]() {
+        if (auto* comp = safePtr.getComponent()) {
+            auto enabled = comp->analyzerEnabledButton.getToggleState();
+
+            comp->responseCurveComponent.toggleAnalysisEnablement(enabled);
         }
     };
 
